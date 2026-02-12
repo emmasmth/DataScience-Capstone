@@ -1,4 +1,5 @@
 import os
+import sys
 
 from src.util import *
 
@@ -10,6 +11,23 @@ def hello():
 def goodbye():
     print_separator()
     print("Thanks for visiting. Goodbye!")
+
+def menu():
+    print_separator()
+    print("Menu:\n"
+          "\t1. Option.\n"
+          "\t2. Another option.\n"
+          "\t3. Exit.\n")
+    selection = input("Make a selection: ")
+    while selection not in ["1", "2", "3"]:
+        selection = input("Make a selection: ")
+    if selection == "1":
+        pass
+    elif selection == "2":
+        pass
+    elif selection == "3":
+        goodbye()
+        sys.exit(0)
 
 def check_file(file_path):
     print_separator()
@@ -35,3 +53,10 @@ def confirm_print(name, print_or_plot="print"):
         return True
     else:
         return False
+
+def print_dataframe(name, df):
+    ans = confirm_print("the cleaned dataframe")
+    if ans:
+        print_separator()
+        print("Showing " + name + "...\n")
+        print(df)

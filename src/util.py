@@ -1,7 +1,6 @@
 import os
 
-from interface import confirm_print
-
+# NOTE TO SELF: Do not import other src files here
 
 def check_file_exists(file_path):
     if os.path.exists(file_path):
@@ -10,13 +9,6 @@ def check_file_exists(file_path):
     else:
         print(f"The file '{file_path}' does not exist.")
         return False
-
-def print_dataframe(name, df):
-    ans = confirm_print("the cleaned dataframe")
-    if ans:
-        print_separator()
-        print("Showing " + name + "...")
-        print(df)
 
 
 def print_separator():
@@ -45,7 +37,8 @@ def save_as_csv(df, subset=None, filename="randHRS.csv"):
     Save the dataframe as a csv
     :param: subset - An optional parameter that indicates that a csv should only include the first *subset* rows.
     """
-    sub_filename = "../data/" + filename
+
+    sub_filename = "./data/" + filename
     if subset is not None:
         df.head(subset).to_csv(sub_filename, index=False)
     else:

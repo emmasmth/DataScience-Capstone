@@ -14,3 +14,10 @@ DS796 Data Science Project
 
 ### RAND HRS Documentation
 Click [here](https://hrsdata.isr.umich.edu/data-products/rand-hrs-longitudinal-file-2022).
+
+
+
+
+#### Installing Python Packages
+``pip install -r requirements.txt
+``

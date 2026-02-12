@@ -31,7 +31,7 @@ class Processor:
         self.add_wave_of_first_retirement()
         self.add_age_of_first_retirement()
 
-        print_dataframe("cleaned_df", self.cleaned_df)
+        # print_dataframe("cleaned_df", self.cleaned_df)
 
     def add_age_of_first_retirement(self):
         """
