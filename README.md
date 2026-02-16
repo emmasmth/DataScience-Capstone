@@ -16,6 +16,9 @@ Health and Retirement Study (HRS).
 
 ### Dataframe
 
+<details>
+  <summary>
+
 | **Variable Name**                               | **Description**                                                                                          | **Original Name**           | **Ref** |
 |-------------------------------------------------|----------------------------------------------------------------------------------------------------------|-----------------------------|---------|
 | Respondent Variables                            |                                                                                                          |                             |         |
@@ -51,6 +54,8 @@ Health and Retirement Study (HRS).
 | hh{w}_total_income                              | Respondent+Spouse Household income                                                                       | HwITOT                      | 1352    |
 |                                                 |                                                                                                          |                             |         |
 
+  </summary>
+</details>
 
 #### Installing Python Packages
 ``pip install -r requirements.txt
