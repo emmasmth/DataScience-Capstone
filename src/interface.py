@@ -1,4 +1,3 @@
-import os
 import sys
 
 from src.util import *
@@ -42,6 +41,8 @@ def check_file(file_path):
             exists = check_file_exists(new_file_path)
             if exists:
                 file_path = new_file_path
+    else:
+        return file_path
     return file_path
 
 def confirm_print(name, print_or_plot="print"):

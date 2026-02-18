@@ -4,16 +4,28 @@ from src.processor import *
 
 hello()
 
-file_path = "./data/randhrs1992_2022v1.sas7bdat"
-file_path = check_file(file_path)
+RAND_path = "./data/randhrs1992_2022v1.sas7bdat"
+cleaned_path = "./data/cleaned_data.csv"
 
-data = DataSet(file_path)
-data.clean()
+if check_file_exists(cleaned_path):
+    file_path = check_file(cleaned_path)
+    cleaned = True
+else:
+    file_path = check_file(RAND_path)
+    cleaned = False
 
-processor = Processor(data.df)
+data = DataSet(file_path, cleaned)
 
-processor.plot_waves()
-processor.plot_age()
+
+"""
+Need to work on processor functions now that we have changed the initial dataset handling.
+
+Should still make the derived variables though
+"""
+# processor = Processor(data.df)
+#
+# processor.plot_waves()
+# processor.plot_age()
 
 while True:
     menu()

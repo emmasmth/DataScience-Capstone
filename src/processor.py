@@ -1,6 +1,5 @@
-from interface import *
 from src.plotter import *
-from src.util import *
+from src.interface import *
 
 import pandas as pd
 
