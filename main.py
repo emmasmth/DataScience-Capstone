@@ -16,16 +16,10 @@ else:
 
 data = DataSet(file_path, cleaned)
 
-
-"""
-Need to work on processor functions now that we have changed the initial dataset handling.
-
-Should still make the derived variables though
-"""
-# processor = Processor(data.df)
-#
-# processor.plot_waves()
-# processor.plot_age()
+processor = Processor(data.df)
+processor.plot_waves()
+processor.plot_age()
+processor.plot_nw()
 
 while True:
     menu()

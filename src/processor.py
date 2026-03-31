@@ -13,63 +13,52 @@ def get_age(row):
     w = row["retire_wave_num"]
     if pd.isna(w):
         return None
-    age_col = f"R{int(w)}AGEY_M"
+    age_col = f"r{int(w)}_age_yrs_mid"
     return row[age_col]
+
+def get_nw(row):
+    """
+    Look up net worth for each respondent
+    :param row: the row representing a respondent
+    :return: the net worth of the respondent
+    """
+    w = row["retire_wave_num"]
+    if pd.isna(w):
+        return None
+    nw_col = f"hh{int(w)}_wealth"
+    return row[nw_col]
 
 
 class Processor:
     def __init__(self, df):
         self.df = df
-        self.cleaned_df = pd.DataFrame()
+        self.new_df = pd.DataFrame()
 
-        self.filtered_data = None
-        self.first_retired_wave = None
+        self.filtered_age_data = None
+        self.filtered_worth_data = None
         self.sorted_wave_counts = None
         self.wave_counts = None
 
-        self.add_wave_of_first_retirement()
-        self.add_age_of_first_retirement()
+        self.derive_first_retirement_info()
 
-        # print_dataframe("cleaned_df", self.cleaned_df)
+        # print_dataframe("new_df", self.new_df)
 
-    def add_age_of_first_retirement(self):
+    def derive_first_retirement_info(self):
         """
-        RwAGEY_M is the Age in years at the midpoint between the beginning and ending interview dates.
-        This function finds the age of a person when they first retire. (See page 140 of reference document).
+        r{w}_labor_status, originally LBRF, summarizes the labor force status for the Respondent at each wave as
+        working full-time, working part-time, unemployed, partly retired, retired, disabled, or not in the
+        labor force. (See page 1900 of reference document).
+
+        r{w}_age_yrs_mid, originally RwAGEY_M, is the Age in years at the midpoint between the beginning and ending
+        interview dates. This function finds the age of a person when they first retire. (See page 140 of
+        reference document).
         """
-        # Get age during midpoint of each wave interview
-        age_vars = [f"R{w}AGEY_M" for w in range(1, 17)]
-        age_df = self.df[age_vars].copy()
 
-        # Get wave where person first becomes retired or presumed retired
-        wave_num = self.first_retired_wave.str.extract(r"R(\d+)").astype(float)[0]
+        # --------------WAVE Derivation--------------
 
-        # Add the wave num column temporarily
-        age_df["retire_wave_num"] = wave_num
-
-        # Compute ages
-        self.df["age_at_first_retirement"] = age_df.apply(get_age, axis=1)
-
-        # Show summary
-        # print(self.df["age_at_first_retirement"].describe())
-
-        # Filter data for only those who are retired or presumed retired (for plotting)
-        self.filtered_data = self.df["age_at_first_retirement"].dropna()
-
-        # Add columns to cleaned dataframe
-        self.cleaned_df["wave_of_first_retirement"] = age_df["retire_wave_num"].astype('Int64')
-        self.cleaned_df["age_at_first_retirement"] = self.df["age_at_first_retirement"]
-
-
-    def add_wave_of_first_retirement(self):
-        """
-        RwLBRF summarizes the labor force status for the Respondent at each wave as working full-time,
-        working part-time, unemployed, partly retired, retired, disabled, or not in the labor force.
-        (See page 1900 of reference document).
-        """
         # There are waves numbered 1 (1992) to 16 (2022)
-        waves = [f"R{w}LBRF" for w in range(1, 17)]  # there are waves numbered 1 to 16
-        LBRF_waves = self.df[waves].copy()  # waves is already a list so don't need to do double square brackets
+        waves = [f"r{w}_labor_status" for w in range(1, 17)]  # there are waves numbered 1 to 16
+        labor_df = self.df[waves].copy()  # waves is already a list so don't need to do double square brackets
 
         mapping = {
             "A": "Presumed retired",
@@ -86,21 +75,74 @@ class Processor:
 
         # Switch LBRF variables to be categorical
         for wave in waves:
-            LBRF_waves[wave] = LBRF_waves[wave].map(mapping).astype("category")
+            labor_df[wave] = labor_df[wave].map(mapping).astype("category")
 
         # Make a boolean df: True where the person is retired (or presumed retired) in that wave
-        retired_bool = LBRF_waves.isin(["Retired", "Presumed retired"])
+        retired_bool = labor_df.isin(["Retired", "Presumed retired"])
 
         # Get the first wave where retirement occurs
-        self.first_retired_wave = retired_bool.idxmax(axis=1)
+        first_retired_wave = retired_bool.idxmax(axis=1)
 
         # If a person was never retired, idxmax returns the first column, so fix that:
-        self.first_retired_wave[~retired_bool.any(axis=1)] = None
+        first_retired_wave[~retired_bool.any(axis=1)] = None
 
         # Get how many people retired in each wave
-        self.wave_counts = self.first_retired_wave.value_counts()
-        self.sorted_wave_counts = self.wave_counts.sort_index(key=lambda idx: idx.str.extract(r"R(\d+)")[0].astype(int))
+        self.wave_counts = first_retired_wave.value_counts()
+        self.sorted_wave_counts = self.wave_counts.sort_index(key=lambda idx: idx.str.extract(r"r(\d+)")[0].astype(int))
 
+        # Get wave where person first becomes retired or presumed retired
+        wave_num = first_retired_wave.str.extract(r"r(\d+)").astype(float)[0]
+
+        # --------------AGE Derivation--------------
+
+        # Get age during midpoint of each wave interview
+        age_vars = [f"r{w}_age_yrs_mid" for w in range(1, 17)]
+        age_df = self.df[age_vars].copy()
+
+        # Add the wave num column temporarily
+        age_df["retire_wave_num"] = wave_num
+
+        # Compute ages
+        self.df["age_at_first_retirement"] = age_df.apply(get_age, axis=1)
+
+        # Show summary
+        # print(self.df["age_at_first_retirement"].describe())
+
+        # Filter data for only those who are retired or presumed retired (for plotting)
+        self.filtered_age_data = self.df["age_at_first_retirement"].dropna()
+
+        # --------------NET WORTH Derivation--------------
+
+        # Get net worth at each wave
+        nw_vars = [f"hh{w}_wealth" for w in range(1, 17)]
+        nw_df = self.df[nw_vars].copy()
+
+        # Add the wave num column temporarily
+        nw_df["retire_wave_num"] = wave_num
+
+        # Compute wealth
+        self.df["net_worth_at_first_retirement"] = nw_df.apply(get_nw, axis=1)
+
+        # Show summary
+        # print(self.df["net_worth_at_first_retirement"].describe())
+
+        # Filter data for only those who are retired or presumed retired (for plotting)
+        self.filtered_worth_data = self.df["net_worth_at_first_retirement"].dropna()
+
+        # --------------New Dataframe--------------
+
+        # Add columns to new dataframe
+        self.new_df["wave_of_first_retirement"] = age_df["retire_wave_num"].astype('Int64')
+        self.new_df["age_at_first_retirement"] = self.df["age_at_first_retirement"]
+        self.new_df["net_worth_at_first_retirement"] = self.df["net_worth_at_first_retirement"]
+
+    def plot_age(self):
+        title = "Distribution of Age at First Retirement"
+        plot = confirm_print("Boxplot: " + title, "plot")
+        if plot:
+            print(self.filtered_age_data.describe())
+            print(self.filtered_age_data.shape)
+            boxplot(self.filtered_age_data, title,"Age at First Retirement (years)")
 
     def plot_waves(self):
         title = "Number of First-Time Retirements by Wave"
@@ -109,9 +151,10 @@ class Processor:
             barplot(self.sorted_wave_counts.index, self.sorted_wave_counts.values, title,
                     "Wave", "Number of people retiring")
 
-    def plot_age(self):
-        title = "Distribution of Age at First Retirement"
+    def plot_nw(self):
+        title = "Distribution of Net Worth at First Retirement"
         plot = confirm_print("Boxplot: " + title, "plot")
         if plot:
-            boxplot(self.filtered_data, title,"Age at First Retirement (years)")
-
+            print(self.filtered_worth_data.describe())
+            print(self.filtered_worth_data.shape)
+            boxplot(self.filtered_worth_data, title, "Net Worth at First Retirement")

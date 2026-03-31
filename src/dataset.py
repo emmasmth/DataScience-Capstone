@@ -39,7 +39,7 @@ class DataSet:
         }
 
         wave_vars = {
-            "_AGEY_M": "age_yrs_mid",
+            "AGEY_M": "age_yrs_mid",
             "MPART": "has_partner",
             "SHLT": "health_self_reported",
             "IEARN": "income",
@@ -68,7 +68,7 @@ class DataSet:
                 col_dict[f"H{w}{var}"] = f"hh{w}_{wave_vars[var]}"
 
         # Rw pre-fix (respondent)
-        Rw_vars = ["LBRF", "_AGEY_M", "MPART", "URBRUR", "SHLT", "JCIND", "JCINDB", "JCINDC",
+        Rw_vars = ["LBRF", "AGEY_M", "MPART", "URBRUR", "SHLT", "JCIND", "JCINDB", "JCINDC",
                    "JPHYS", "JSTRES", "JHOURS", "IEARN", "RETMON", "RETYR"]
         for var in Rw_vars:
             set_vars.extend([f"R{w}{var}" for w in range(1, 17)])
@@ -122,9 +122,9 @@ class DataSet:
 
     def find_correlations(self):
         """
-        Find high correlations (defined as correlation coefficient > 0.80) among respondent (non-wave) variables
+        Find high correlations (defined as correlation coefficient > 0.90) among respondent (non-wave) variables
         """
-        threshold = 0.80
+        threshold = 0.90
 
         cols = ["r_age_ss_payments", "r_birth_yr", "r_child_born", "r_edu_high_deg",
             "r_edu_sum", "r_edu_yrs", "r_gender", "r_ID", "r_race"]

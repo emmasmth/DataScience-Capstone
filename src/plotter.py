@@ -10,6 +10,7 @@ def barplot(idx, vals, title, xlab, ylab):
     ax.set_title(title)
     ax.set_xlabel(xlab)
     ax.set_ylabel(ylab)
+    plt.xticks(rotation=45)
     plt.tight_layout()
     plt.show()
 
