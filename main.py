@@ -1,3 +1,4 @@
+from src.model import *
 from src.dataset import *
 from src.interface import *
 from src.processor import *
@@ -20,6 +21,9 @@ processor = Processor(data.df)
 processor.plot_waves()
 processor.plot_age()
 processor.plot_nw()
+new_df = processor.get_new_df()
+
+model = Model(new_df)
 
 while True:
     menu()

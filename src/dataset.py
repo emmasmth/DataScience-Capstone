@@ -18,10 +18,15 @@ class DataSet:
         else:
             self.load_sas7bdat()
             self.copy_vars()
-        self.find_correlations()
-        self.remove_vars()
+            self.find_correlations()
+            self.remove_vars()
+
+        self.df.to_csv("./data/cleaned_data.csv", index=False)
 
     def copy_vars(self):
+        """
+        Copy and rename all relevant variables to a working df.
+        """
         # copy over variables that are NOT wave specific
         set_vars = ["RAHHIDPN", "RABYEAR", "RAGENDER", "RARACEM", "RAEDYRS",
                 "RAEDEGRM", "RAEDUC", "RAEVBRN", "RASSAGEM"]
@@ -127,7 +132,7 @@ class DataSet:
         threshold = 0.90
 
         cols = ["r_age_ss_payments", "r_birth_yr", "r_child_born", "r_edu_high_deg",
-            "r_edu_sum", "r_edu_yrs", "r_gender", "r_ID", "r_race"]
+            "r_gender", "r_ID", "r_race", "r_edu_sum", "r_edu_yrs"]
         corr_matrix = self.df[cols].corr()
         # corr_matrix.to_csv("./data/corr_matrix_respondent_vars.csv")
 
@@ -149,9 +154,15 @@ class DataSet:
                 print("\t", var1, var2, corr)
 
     def get_dataframe(self):
+        """
+        Getter function.
+        """
         return self.df
 
     def load(self):
+        """
+        If using cleaned dataset, read in csv.
+        """
         self.df = pd.read_csv(self.file_path)
 
     def load_sas7bdat(self):
@@ -167,4 +178,8 @@ class DataSet:
         print("File load complete! Took " + str(round(load_end_time - load_start_time, 2)) + " seconds")
 
     def remove_vars(self):
-        pass
+        """
+        Remove variables that are highly correlated. We want to keep the r_edu_high_deg variable since it has the
+        most categories. This function removes the r_edu_sum and r_edu_yrs variables.
+        """
+        self.df = self.df.drop(columns=["r_edu_sum", "r_edu_yrs"], errors="ignore")

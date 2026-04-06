@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-
+import matplotlib.ticker as mticker
 
 def barplot(idx, vals, title, xlab, ylab):
     # generate plot
@@ -15,10 +15,14 @@ def barplot(idx, vals, title, xlab, ylab):
     plt.show()
 
 
-def boxplot(data, title, ylab):
-    plt.figure(figsize=(8, 5))
+def boxplot(data, title, xlab, ylab):
+    plt.figure(figsize=(8, 8))
     plt.boxplot(data, vert=False, showmeans=True)
     plt.title(title)
+    plt.xlabel(xlab)
     plt.ylabel(ylab)
+    plt.xticks(rotation=45)
+    ax = plt.gca()
+    ax.xaxis.set_major_formatter(mticker.StrMethodFormatter('{x:,.0f}'))
     plt.show()
 

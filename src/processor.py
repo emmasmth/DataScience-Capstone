@@ -131,20 +131,43 @@ class Processor:
 
         # --------------New Dataframe--------------
 
-        # Add columns to new dataframe
-        self.new_df["wave_of_first_retirement"] = age_df["retire_wave_num"].astype('Int64')
-        self.new_df["age_at_first_retirement"] = self.df["age_at_first_retirement"]
-        self.new_df["net_worth_at_first_retirement"] = self.df["net_worth_at_first_retirement"]
+        # Add column to new dataframe
+        self.new_df = self.df.copy()
+        self.new_df = self.new_df.assign(
+            wave_of_first_retirement=age_df["retire_wave_num"].astype("Int64")
+        )
+
+    def get_df(self):
+        """
+        Getter function.
+        """
+        return self.df
+
+    def get_new_df(self):
+        """
+        Getter function.
+        """
+        if self.new_df.empty:
+            print("Warning! No new data. Please run processor to update.")
+        return self.new_df
 
     def plot_age(self):
+        """
+        Plot age at retirement variable as a boxplot. Using filtered data that does not include respondents that
+        have not yet retired.
+        """
         title = "Distribution of Age at First Retirement"
         plot = confirm_print("Boxplot: " + title, "plot")
         if plot:
             print(self.filtered_age_data.describe())
             print(self.filtered_age_data.shape)
-            boxplot(self.filtered_age_data, title,"Age at First Retirement (years)")
+            boxplot(self.filtered_age_data, title,"Age at First Retirement (years)", "")
 
     def plot_waves(self):
+        """
+        Plot distribution of retirement waves as barplot. Using filtered data that does not include respondents that
+        have not yet retired.
+        """
         title = "Number of First-Time Retirements by Wave"
         plot = confirm_print("Barplot: " + title, "plot")
         if plot:
@@ -152,9 +175,13 @@ class Processor:
                     "Wave", "Number of people retiring")
 
     def plot_nw(self):
+        """
+        Plot distribution of net worth at retirement. Using filtered data that does not include respondents that
+        have not yet retired.
+        """
         title = "Distribution of Net Worth at First Retirement"
         plot = confirm_print("Boxplot: " + title, "plot")
         if plot:
-            print(self.filtered_worth_data.describe())
-            print(self.filtered_worth_data.shape)
-            boxplot(self.filtered_worth_data, title, "Net Worth at First Retirement")
+            # print(self.filtered_worth_data.describe())
+            # print(self.filtered_worth_data.shape)
+            boxplot(self.filtered_worth_data, title, "Net Worth at First Retirement $","")
