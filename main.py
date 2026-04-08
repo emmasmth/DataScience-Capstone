@@ -18,12 +18,12 @@ else:
 data = DataSet(file_path, cleaned)
 
 processor = Processor(data.df)
-processor.plot_waves()
-processor.plot_age()
-processor.plot_nw()
+# processor.plot_waves()
+# processor.plot_age()
+# processor.plot_nw()
 new_df = processor.get_new_df()
 
 model = Model(new_df)
 
-while True:
-    menu()
+# while True:
+#     menu()
