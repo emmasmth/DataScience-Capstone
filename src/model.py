@@ -26,6 +26,7 @@ class Model:
         self.model_age_forest()
 
         self.model_worth_linear()
+        self.model_worth_forest()
 
     def add_variables(self):
         """
@@ -125,6 +126,55 @@ class Model:
             print("There are highly correlated variables :(")
         # print(high_corr[high_corr > threshold])
 
+    def model_age_forest(self):
+        pd.set_option('display.float_format', '{:.6f}'.format)
+
+        age_df = self.working_df.copy()
+        # print(age_df.shape)
+
+        # drop respondents that have not yet retired
+        age_df = age_df.dropna(subset=["age_at_first_retirement"])
+        # print(age_df.shape)
+
+        print_separator()
+        print("Random Forest Regression: Age")
+        print(f"Run #1")
+
+        y = age_df["age_at_first_retirement"]
+        x = age_df.drop(columns=["age_at_first_retirement", "net_worth_at_first_retirement",
+                                 "wave_of_first_retirement"])
+
+        x = x.drop(columns=["r_age_ss_payments"])
+
+        x_train, x_test, y_train, y_test = sklearn.model_selection.train_test_split(
+            x, y, test_size=0.2, random_state=42
+        )
+
+        x_train = x_train.fillna(x_train.mean())
+        x_test = x_test.fillna(x_train.mean())
+
+        rf = sklearn.ensemble.RandomForestRegressor(n_estimators=200, random_state=42)
+        rf.fit(x_train, y_train)
+
+        rf.fit(x_train, y_train)
+        preds = rf.predict(x_test)
+
+        r2 = sklearn.metrics.r2_score(y_test, preds)
+        mae = sklearn.metrics.mean_absolute_error(y_test, preds)
+
+        print("Random Forest Results")
+        print("---------------------")
+        print(f"R²: {r2:.4f}")
+        print(f"MAE: {mae:.4f}")
+
+        importance = pd.Series(
+            rf.feature_importances_,
+            index=x_train.columns
+        ).sort_values(ascending=False)
+
+        print("\nTop 10 Important Features:")
+        print(importance.head(10))
+
     def model_age_linear(self):
         pd.set_option('display.float_format', '{:.6f}'.format)
 
@@ -202,25 +252,25 @@ class Model:
         print("\nCoefficients:")
         print(coef_reduced)
 
-    def model_age_forest(self):
+    def model_worth_forest(self):
         pd.set_option('display.float_format', '{:.6f}'.format)
 
-        age_df = self.working_df.copy()
-        # print(age_df.shape)
+        worth_df = self.working_df.copy()
 
-        # drop respondents that have not yet retired
-        age_df = age_df.dropna(subset=["age_at_first_retirement"])
-        # print(age_df.shape)
+        worth_df = worth_df.dropna(subset=["net_worth_at_first_retirement"])
+        worth_df = worth_df[worth_df["net_worth_at_first_retirement"] > -1]
 
         print_separator()
-        print("Random Forest Regression: Age")
-        print(f"Run #1")
+        print("Random Forest Regression: Net Worth")
 
-        y = age_df["age_at_first_retirement"]
-        x = age_df.drop(columns=["age_at_first_retirement", "net_worth_at_first_retirement",
-                                 "wave_of_first_retirement"])
+        y = np.log1p(worth_df["net_worth_at_first_retirement"])
 
-        x = x.drop(columns=["r_age_ss_payments"])
+        x = worth_df.drop(columns=["age_at_first_retirement",
+                                   "net_worth_at_first_retirement",
+                                   "wave_of_first_retirement",
+                                   "hh_wealth_avg",
+                                   "hh_wealth_growth",
+                                   "hh_income_to_wealth"])
 
         x_train, x_test, y_train, y_test = sklearn.model_selection.train_test_split(
             x, y, test_size=0.2, random_state=42
@@ -229,14 +279,20 @@ class Model:
         x_train = x_train.fillna(x_train.mean())
         x_test = x_test.fillna(x_train.mean())
 
-        rf = sklearn.ensemble.RandomForestRegressor(n_estimators=200, random_state=42)
-        rf.fit(x_train, y_train)
+        rf = sklearn.ensemble.RandomForestRegressor(n_estimators=200,
+                                                    max_depth=None,
+                                                    min_samples_split=2,
+                                                    random_state=42,
+                                                    n_jobs=-1)
 
         rf.fit(x_train, y_train)
         preds = rf.predict(x_test)
 
+        y_test_actual = np.expm1(y_test)
+        preds_actual = np.expm1(preds)
+
         r2 = sklearn.metrics.r2_score(y_test, preds)
-        mae = sklearn.metrics.mean_absolute_error(y_test, preds)
+        mae = sklearn.metrics.mean_absolute_error(y_test_actual, preds_actual)
 
         print("Random Forest Results")
         print("---------------------")
@@ -266,7 +322,8 @@ class Model:
         worth_df = worth_df[worth_df["net_worth_at_first_retirement"] > -1]
         y = np.log1p(worth_df["net_worth_at_first_retirement"]) # log transform bc skewed
         x = worth_df.drop(columns=["age_at_first_retirement", "net_worth_at_first_retirement",
-                                 "wave_of_first_retirement", "hh_wealth_avg", "hh_wealth_growth"])
+                                 "wave_of_first_retirement", "hh_wealth_avg", "hh_wealth_growth",
+                                 "hh_income_to_wealth"])
 
         x_train, x_test, y_train, y_test = sklearn.model_selection.train_test_split(
             x, y, test_size=0.2, random_state=42
