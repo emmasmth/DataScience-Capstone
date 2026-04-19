@@ -5,6 +5,8 @@ import pandas as pd
 import sklearn.linear_model, sklearn.metrics, sklearn.model_selection
 
 import util
+import src.plotter as plotter
+from interface import confirm_print
 from util import *
 
 class Model:
@@ -156,7 +158,6 @@ class Model:
         rf = sklearn.ensemble.RandomForestRegressor(n_estimators=200, random_state=42)
         rf.fit(x_train, y_train)
 
-        rf.fit(x_train, y_train)
         preds = rf.predict(x_test)
 
         r2 = sklearn.metrics.r2_score(y_test, preds)
@@ -174,6 +175,11 @@ class Model:
 
         print("\nTop 10 Important Features:")
         print(importance.head(10))
+
+        title = "Random Forest (Age)"
+        plot = confirm_print(f"Scatter: {title}")
+        if plot:
+            plotter.plot_regression_results(y_test, preds, r2, mae, is_log=False, title=title)
 
     def model_age_linear(self):
         pd.set_option('display.float_format', '{:.6f}'.format)
@@ -252,6 +258,16 @@ class Model:
         print("\nCoefficients:")
         print(coef_reduced)
 
+        title = "Linear Regression (Age - Full Model)"
+        plot = confirm_print(f"Scatter: {title}")
+        if plot:
+            plotter.plot_regression_results(y_test, preds, r2, mae, is_log=False, title=title)
+
+        title2 = "Linear Regression (Age - Reduced Model)"
+        plot2 = confirm_print(f"Scatter: {title2}")
+        if plot2:
+            plotter.plot_regression_results(y_test, preds_reduced, r2_reduced, mae_reduced, is_log=False, title=title2)
+
     def model_worth_forest(self):
         pd.set_option('display.float_format', '{:.6f}'.format)
 
@@ -306,6 +322,11 @@ class Model:
 
         print("\nTop 10 Important Features:")
         print(importance.head(10))
+
+        title = "Random Forest (Net Worth)"
+        plot = confirm_print(f"Scatter: {title}")
+        if plot:
+            plotter.plot_regression_results(y_test, preds, r2, mae, is_log=True, title=title)
 
     def model_worth_linear(self):
         pd.set_option('display.float_format', '{:.6f}'.format)
@@ -387,6 +408,16 @@ class Model:
         coef_reduced = pd.Series(model_reduced.coef_, index=x_train_reduced.columns).sort_values()
         print("\nCoefficients:")
         print(coef_reduced)
+
+        title = "Linear Regression (Net Worth - First Model)"
+        plot = confirm_print(f"Scatter: {title}")
+        if plot:
+            plotter.plot_regression_results(y_test, preds, r2, mae, is_log=True, title=title)
+
+        title2 = "Linear Regression (Net Worth - Reduced Model)"
+        plot2 = confirm_print(f"Scatter: {title2}")
+        if plot2:
+            plotter.plot_regression_results(y_test, preds_reduced, r2_reduced, mae_reduced, is_log=True, title=title2)
 
     def omit_variables(self):
         """
