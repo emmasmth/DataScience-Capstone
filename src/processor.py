@@ -106,7 +106,9 @@ class Processor:
         self.df["age_at_first_retirement"] = age_df.apply(get_age, axis=1)
 
         # Show summary
-        # print(self.df["age_at_first_retirement"].describe())
+        print_separator()
+        print("Age at First Retirement Statistics")
+        print(self.df["age_at_first_retirement"].describe())
 
         # Filter data for only those who are retired or presumed retired (for plotting)
         self.filtered_age_data = self.df["age_at_first_retirement"].dropna()
@@ -124,7 +126,10 @@ class Processor:
         self.df["net_worth_at_first_retirement"] = nw_df.apply(get_nw, axis=1)
 
         # Show summary
-        # print(self.df["net_worth_at_first_retirement"].describe())
+        pd.set_option('display.float_format', '{:,.2f}'.format)
+        print_separator()
+        print("Net Worth Summary Statistics")
+        print(self.df["net_worth_at_first_retirement"].describe())
 
         # Filter data for only those who are retired or presumed retired (for plotting)
         self.filtered_worth_data = self.df["net_worth_at_first_retirement"].dropna()
